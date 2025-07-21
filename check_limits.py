@@ -1,4 +1,3 @@
-
 class Parameter:
     def __init__(self, name, min_limit, max_limit):
         self.name = name
@@ -23,16 +22,18 @@ class Reporter:
         print(message)
 
 
-def battery_is_ok(parameters, readings, reporter=Reporter()):
-    all_ok = True
-    for param in parameters:
-        value = readings.get(param.name)
-        if value is None:
-            raise ValueError(f"Missing reading for {param.name}")
-        is_ok, breach = param.is_within_range(value)
-        reporter.report(param.name, is_ok, breach)
-        all_ok = all_ok and is_ok
-    return all_ok
+def validate_parameter(param, value, reporter):
+    is_ok, breach = param.is_within_range(value)
+    reporter.report(param.name, is_ok, breach)
+    return is_ok
+
+
+def battery_is_ok(parameters, readings, reporter=None):
+    reporter = reporter or Reporter()
+    return all(
+        validate_parameter(param, readings.get(param.name), reporter)
+        for param in parameters
+    )
 
 
 if __name__ == '__main__':
@@ -42,9 +43,8 @@ if __name__ == '__main__':
         Parameter("charge_rate", 0, 0.8)
     ]
 
-    #Test cases
     assert battery_is_ok(PARAMETERS, {"temperature": 25, "soc": 70, "charge_rate": 0.7}) is True
-    assert battery_is_ok(PARAMETERS, {"temperature": -5, "soc": 70, "charge_rate": 0.7}) is False
+    assert battery_is_ok(PARAMETERS, {"temperature": -1, "soc": 70, "charge_rate": 0.7}) is False
     assert battery_is_ok(PARAMETERS, {"temperature": 25, "soc": 85, "charge_rate": 0.7}) is False
     assert battery_is_ok(PARAMETERS, {"temperature": 25, "soc": 70, "charge_rate": 0.9}) is False
-
+    assert battery_is_ok(PARAMETERS, {"temperature": -1, "soc": 85, "charge_rate": 0.9}) is False
