@@ -42,7 +42,7 @@ if __name__ == '__main__':
         Parameter("charge_rate", 0, 0.8)
     ]
 
-    # Test cases
+    #Test cases
     assert battery_is_ok(PARAMETERS, {"temperature": 25, "soc": 70, "charge_rate": 0.7}) is True
     assert battery_is_ok(PARAMETERS, {"temperature": -5, "soc": 70, "charge_rate": 0.7}) is False
     assert battery_is_ok(PARAMETERS, {"temperature": 25, "soc": 85, "charge_rate": 0.7}) is False
